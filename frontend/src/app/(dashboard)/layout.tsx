@@ -1,11 +1,11 @@
-import DashboardLayoutContent from '@/components/dashboard/layout-content';
+"use client";
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
+import { DashboardLayoutContent } from "@/components/dashboard/layout-content";
 
 export default function DashboardLayout({
   children,
-}: DashboardLayoutProps) {
+}: {
+  children: React.ReactNode;
+}) {
   return <DashboardLayoutContent>{children}</DashboardLayoutContent>;
 }

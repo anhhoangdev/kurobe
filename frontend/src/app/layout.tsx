@@ -3,12 +3,43 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { QueryProvider } from "@/providers/query-provider";
+import { ReactQueryProvider } from "@/providers/react-query-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kurobe BI Platform",
-  description: "Production-ready BI chat platform with pluggable engines",
+  title: "Kurobe Platform",
+  description: "Advanced analytics platform with real-time insights and AI-powered reporting",
+  keywords: ["analytics", "dashboard", "insights", "reporting", "data visualization"],
+  authors: [{ name: "Kurobe Team" }],
+  creator: "Kurobe",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://nexus-analytics.com",
+    title: "Kurobe Platform",
+    description: "Advanced analytics platform with real-time insights and AI-powered reporting",
+    siteName: "Kurobe",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kurobe Platform",
+    description: "Advanced analytics platform with real-time insights and AI-powered reporting",
+    creator: "@nexusanalytics",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "your-google-verification-code",
+  },
 };
 
 export default function RootLayout({
@@ -25,10 +56,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>
+          <ReactQueryProvider>
             {children}
             <Toaster />
-          </QueryProvider>
+          </ReactQueryProvider>
         </ThemeProvider>
       </body>
     </html>
