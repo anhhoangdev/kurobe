@@ -1,0 +1,72 @@
+# Kurobe Engine Configuration
+# This file configures the pluggable engines for the BI platform
+
+text_to_sql:
+  default:
+    provider: "anthropic"
+    enabled: true
+    config:
+      model: "claude-3-opus-20240229"
+      temperature: 0.1
+      max_tokens: 4000
+      system_prompt: |
+        You are an expert SQL query generator. Given a natural language question,
+        generate the appropriate SQL query. Consider performance and security.
+        Always use parameterized queries when possible.
+      
+  openai:
+    provider: "openai"
+    enabled: false
+    config:
+      model: "gpt-4-turbo-preview"
+      temperature: 0.1
+      max_tokens: 4000
+      
+  local:
+    provider: "local_llm"
+    enabled: false
+    config:
+      model_path: "/models/sqlcoder"
+      device: "cuda"
+
+visualization:
+  default:
+    provider: "rule_based"
+    enabled: true
+    config:
+      rules:
+        - if: "single_metric"
+          then: "metric"
+        - if: "time_series"
+          then: "line"
+        - if: "categorical_comparison"
+          then: "bar"
+        - if: "distribution"
+          then: "histogram"
+        - if: "correlation"
+          then: "scatter"
+          
+  ai_powered:
+    provider: "anthropic"
+    enabled: false
+    config:
+      model: "claude-3-sonnet-20240229"
+      temperature: 0.3
+      
+semantic:
+  default:
+    provider: "anthropic"
+    enabled: true
+    config:
+      model: "claude-3-sonnet-20240229"
+      temperature: 0.2
+      analysis_prompt: |
+        Analyze the user's question and determine:
+        1. Intent (what they want to know)
+        2. Entities (key business objects mentioned)
+        3. Complexity (simple query, multi-step analysis, etc.)
+        4. Suggested approach
+        
+      planning_prompt: |
+        Create an execution plan for answering this question.
+        Consider available data sources and break down into steps.

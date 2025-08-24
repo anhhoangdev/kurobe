@@ -1,0 +1,159 @@
+---
+alwaysApply: true
+---
+
+# Kurobe BI Platform Project - Cursor Rules
+
+## Project Overview
+
+Kurobe is a production-ready BI chat platform with a configuration-driven, engine-agnostic architecture:
+
+- **Frontend**: Next.js 15+ with TypeScript, Tailwind CSS, shadcn/ui, Recharts, React Query
+- **Backend**: Python 3.11+ with FastAPI, PostgreSQL, Redis, Pluggable Engines
+- **BI SDK**: Comprehensive SDK for question-driven dashboards and panel generation
+- **Database**: PostgreSQL with RLS, supporting Trino/Presto, DuckDB via connectors
+
+## Architecture Components
+
+### Core Stack
+
+- **Frontend**: Next.js App Router + TypeScript + Tailwind + shadcn/ui + Recharts
+- **Backend**: FastAPI + PostgreSQL + Redis + Pluggable Engine System
+- **Database**: PostgreSQL with RLS, multi-connection support (Postgres, Trino, DuckDB)
+- **Engines**: Configuration-driven Text-to-SQL, Visualization, and Semantic engines
+- **SDK**: Kurobe SDK with bi_sdk and agents_sdk modules
+- **Monitoring**: Langfuse tracing, Sentry error tracking, Prometheus metrics
+
+### File Organization
+
+```txt
+project/
+├── frontend/               # Next.js application
+│   └── src/
+│       ├── app/           # Next.js app router pages
+│       ├── components/    # Reusable React components
+│       │   ├── chat/     # Chat interface components
+│       │   ├── panels/   # Visualization panel components
+│       │   └── dashboard/# Dashboard builder components
+│       ├── hooks/         # Custom React hooks
+│       ├── lib/          # Utilities and configurations
+│       └── providers/    # Context providers
+├── backend/               # Python FastAPI backend
+│   ├── app/              # Application package
+│   │   ├── api/          # API endpoints
+│   │   ├── core/         # Core functionality
+│   │   ├── engines/      # Pluggable engine implementations
+│   │   ├── models/       # Database models
+│   │   ├── schemas/      # Pydantic schemas
+│   │   └── services/     # Business logic services
+│   ├── postgres/         # Database migrations
+│   └── config/           # Configuration files
+├── sdk/                   # Kurobe SDK
+│   └── kurobe/
+│       ├── core/         # Core models and interfaces
+│       ├── bi/           # BI-specific functionality
+│       ├── agents/       # Agent management
+│       └── api/          # API client implementations
+└── docs/                 # Documentation
+```
+
+## Development Principles
+
+### Code Quality Standards
+
+- **Type Safety**: Strict TypeScript frontend, comprehensive Python type hints
+- **Error Handling**: Structured error responses, proper exception handling
+- **Logging**: Structured logging with context throughout the stack
+- **Testing**: Unit tests for core logic, integration tests for APIs
+- **Security**: Input validation, authentication, encryption for sensitive data
+
+### Performance Guidelines
+
+- **Frontend**: Code splitting, lazy loading, optimized bundle size
+- **Backend**: Async/await patterns, connection pooling, Redis caching
+- **Database**: Proper indexing, query optimization, RLS policies
+- **Agent**: Timeout handling, resource limits, sandbox isolation
+
+### Integration Patterns
+
+- **Engine System**: YAML-configured pluggable engines with hot-swapping
+- **Multi-Database**: Connection pool supporting Postgres, Trino/Presto, DuckDB
+- **Question-Driven**: Each chat session materializes into dashboard panels
+- **Real-time**: WebSocket/SSE for live query execution and panel updates
+
+## Key Technologies
+
+### Frontend Dependencies
+
+- Next.js 15+, React 18+, TypeScript 5+
+- @tanstack/react-query for data fetching
+- shadcn/ui components, Tailwind CSS
+- Recharts for data visualization
+- react-hook-form for form handling
+
+### Backend Dependencies
+
+- FastAPI 0.115+, Python 3.11+
+- SQLAlchemy 2.0+, asyncpg for PostgreSQL
+- Redis 5.0+ for caching and sessions
+- LiteLLM 1.72+ for LLM integration
+- Pydantic 2.0+ for validation
+- Dramatiq for background jobs
+
+## Advanced Patterns
+
+### BI Platform Architecture
+
+- **Question → Panels**: Each user question generates one or more dashboard panels
+- **Engine Registry**: Dynamic engine loading from YAML configuration
+- **Connection Pool**: Multi-database connection management with health checks
+- **Query Caching**: Smart caching based on query hash and parameters
+- **Panel Specs**: Flexible visualization configuration with PanelSpec model
+
+### Security & Authentication
+
+- **API Key Auth**: Secure API key generation and validation
+- **Row Level Security**: PostgreSQL RLS for multi-tenant isolation
+- **Connection Encryption**: Encrypted storage of database credentials
+- **Query Sanitization**: SQL injection prevention and parameterized queries
+- **Audit Logging**: Comprehensive audit trail for compliance
+
+### Database Patterns
+
+- **Migrations**: Idempotent SQL with proper error handling
+- **Indexing**: Foreign keys and query optimization
+- **Triggers**: Automated timestamp management
+- **Enums**: Safe enum creation with duplicate handling
+
+## Development Workflow
+
+### Environment Setup
+
+- Use Python 3.11+ with virtual environments
+- Docker Compose for PostgreSQL, Redis, and optional services
+- Environment-specific configurations via .env files
+- YAML-based engine configuration in config/engines.yaml
+
+### Code Standards
+
+- Follow established naming conventions
+- Implement proper error boundaries
+- Use consistent logging patterns
+- Handle loading and error states
+
+### Testing Strategy
+
+- Unit tests for business logic
+- Integration tests for API endpoints
+- E2E tests for critical user flows
+- Performance testing for agent execution
+
+## When in Doubt
+
+- Follow the Kortix/Suna patterns adapted for BI use cases
+- Prioritize configuration-driven design over hardcoded logic
+- Use the SDK patterns for client-server communication
+- Implement proper separation between engines, orchestration, and UI
+- Ensure all database queries are parameterized and cached when appropriate
+- Follow the established error handling patterns with proper logging
+- Check domain-specific rule files (backend.mdc, frontend.mdc) for details
