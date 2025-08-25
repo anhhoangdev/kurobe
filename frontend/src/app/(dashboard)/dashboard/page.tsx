@@ -1,11 +1,8 @@
 import { Suspense } from "react";
-import { DashboardContent } from "@/components/dashboard/dashboard-content";
-import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
-  return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardContent />
-    </Suspense>
-  );
+  // Redirect to dashboards list instead of showing individual dashboard
+  // This resolves the overlap with the main question interface
+  redirect("/dashboards");
 }

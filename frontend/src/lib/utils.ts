@@ -44,8 +44,13 @@ export function truncateText(text: string, maxLength: number): string {
   return text.slice(0, maxLength) + '...'
 }
 
+let idCounter = 0;
+
 export function generateId(): string {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36)
+  idCounter++;
+  // Use a static timestamp during SSR to avoid hydration issues
+  const timestamp = typeof window !== 'undefined' ? Date.now().toString(36) : 'static';
+  return `id-${idCounter}-${timestamp}`
 }
 
 export function debounce<T extends (...args: any[]) => any>(

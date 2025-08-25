@@ -14,7 +14,8 @@ import {
   Home,
   TrendingUp,
   PieChart,
-  Target
+  Target,
+  MessageSquare
 } from "lucide-react";
 
 import {
@@ -37,48 +38,48 @@ import { cn } from "@/lib/utils";
 const data = {
   main: [
     {
-      title: "Home",
-      url: "/",
+      title: "Ask Questions",
+      url: "/app",
       icon: Home,
     },
     {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: LayoutDashboard,
+      title: "Browse Data",
+      url: "/app/data",
+      icon: Database,
     },
   ],
   analytics: [
+    {
+      title: "My Questions",
+      url: "/questions",
+      icon: FileText,
+    },
     {
       title: "Dashboards",
       url: "/dashboards",
       icon: PieChart,
     },
     {
-      title: "Reports",
-      url: "/reports",
-      icon: FileText,
-    },
-    {
-      title: "Metrics",
-      url: "/metrics",
-      icon: TrendingUp,
-    },
-    {
-      title: "Goals",
-      url: "/goals",
+      title: "Collections",
+      url: "/collections",
       icon: Target,
+    },
+    {
+      title: "Activity",
+      url: "/activity",
+      icon: TrendingUp,
     },
   ],
   data: [
     {
-      title: "Connections",
+      title: "Data Sources",
       url: "/connections",
       icon: Database,
     },
     {
-      title: "Queries",
-      url: "/queries",
-      icon: FileText,
+      title: "Models",
+      url: "/models",
+      icon: LayoutDashboard,
     },
   ],
   settings: [
@@ -104,7 +105,7 @@ export function SidebarLeft() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
+              <Link href="/app">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <BarChart3 className="size-4" />
                 </div>
@@ -225,6 +226,14 @@ export function SidebarLeft() {
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/app">
+                <MessageSquare />
+                <span>Ask Question</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link href="/dashboard/new">
