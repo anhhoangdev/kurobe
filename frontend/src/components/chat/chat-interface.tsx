@@ -282,11 +282,12 @@ export function ChatInterface({
             ) : threadId && messages.length > 0 ? (
               <div className="flex-1">
                 <div className="space-y-6 pb-4">
-                  {messages.map((message) => (
+                  {messages.map((message, index) => (
                     <MessageBubble
                       key={message.id}
                       message={message}
                       onCopy={handleCopyMessage}
+                      isContextAware={message.role === 'assistant' && index > 1}
                     />
                   ))}
                   {isLoading && (
@@ -366,9 +367,10 @@ export function ChatInterface({
 interface MessageBubbleProps {
   message: Message;
   onCopy: (content: string) => void;
+  isContextAware?: boolean;
 }
 
-function MessageBubble({ message, onCopy }: MessageBubbleProps) {
+function MessageBubble({ message, onCopy, isContextAware = false }: MessageBubbleProps) {
   const [showActions, setShowActions] = useState(false);
 
   return (
@@ -390,6 +392,14 @@ function MessageBubble({ message, onCopy }: MessageBubbleProps) {
         "max-w-2xl space-y-3",
         message.role === 'user' ? "items-end" : "items-start"
       )}>
+        {/* Context indicator for follow-up responses */}
+        {isContextAware && (
+          <div className="flex items-center space-x-2 text-xs text-slate-500 mb-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>Context-aware response</span>
+          </div>
+        )}
+        
         <div className={cn(
           "px-4 py-3 rounded-2xl",
           message.role === 'user'
