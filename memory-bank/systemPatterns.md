@@ -1,67 +1,108 @@
 # System Patterns & Architecture
 
-## High-Level Architecture
+## High-Level Architecture - Agents-to-Agents System
 
 ```mermaid
 graph TD
     A[Frontend - Next.js] --> B[API Gateway - FastAPI]
-    B --> C[Orchestration Layer]
-    C --> D[Engine Registry]
-    D --> E[Text-to-SQL Engine]
-    D --> F[Visualization Engine]
-    D --> G[Semantic Engine]
-    C --> H[Connection Pool]
-    H --> I[(PostgreSQL)]
-    H --> J[(Trino/Presto)]
-    H --> K[(DuckDB)]
-    B --> L[Panel Service]
-    L --> M[Dashboard Service]
-    C --> N[Query Cache - Redis]
-    C --> O[Background Jobs - Dramatiq]
+    B --> C[Agent Orchestration Layer]
+    
+    subgraph "Multi-LLM Provider System"
+        D[Provider Factory]
+        E[Anthropic Provider]
+        F[OpenAI Provider]
+        G[Local Model Provider]
+    end
+    
+    subgraph "XiYan-SQL Framework"
+        H[Schema Linking]
+        I[M-Schema Generator]
+        J[Candidate Generation Hub]
+        K[Fine-tuned SQL Generator]
+        L[ICL SQL Generator]
+        M[SQL Refiner]
+        N[Candidate Selection Agent]
+    end
+    
+    subgraph "Agent System"
+        O[Intent Validation Agent]
+        P[Agent Pipeline Orchestrator]
+        Q[Conversation Manager]
+    end
+    
+    C --> D
+    C --> H
+    C --> O
+    D --> E
+    D --> F
+    D --> G
+    H --> I
+    I --> J
+    J --> K
+    J --> L
+    K --> M
+    L --> M
+    M --> N
+    O --> P
+    P --> Q
+    
+    C --> R[Connection Pool]
+    R --> S[(PostgreSQL)]
+    R --> T[(Trino/Presto)]
+    R --> U[(DuckDB)]
+    
+    C --> V[Panel Service]
+    V --> W[Dashboard Service]
+    C --> X[Query Cache - Redis]
 ```
 
 ## Core Design Patterns
 
-### 1. Configuration-Driven Engine System
+### 1. Multi-LLM Provider System
 
-**Pattern**: Registry + Factory + Strategy
+**Pattern**: Abstract Factory + Strategy + Dependency Injection
 ```python
-# Engine Registry manages pluggable engines
-engine_registry = EngineRegistry()
+# Provider Factory creates configured LLM providers
+provider_factory = LLMProviderFactory(config)
 
-# Engines are loaded from YAML configuration
-await engine_registry.register_from_config("config/engines.yaml")
+# Runtime provider selection based on configuration
+anthropic_provider = await provider_factory.create_provider("anthropic")
+openai_provider = await provider_factory.create_provider("openai")
 
-# Runtime engine selection based on configuration
-text_to_sql_engine = await engine_registry.get_engine("text_to_sql", "default")
+# Agents use dependency injection for providers
+intent_agent = IntentValidationAgent(anthropic_provider, config)
+sql_agent = FineTunedSQLGenerator(openai_provider, config)
 ```
 
 **Key Components**:
-- `EngineRegistry`: Central registration and discovery
-- `Engine` interfaces: Common contracts for all engine types
-- `EngineConfig`: YAML-driven configuration with hot-reload
-- Engine implementations: Anthropic, OpenAI, local models, rule-based
+- `ILLMProvider`: Abstract interface for all providers
+- `LLMProviderFactory`: Creates and manages provider instances
+- `ProviderConfig`: Configuration injection with validation
+- Provider implementations: Anthropic, OpenAI, Local models with unified interface
 
-### 2. Question-to-Panel Pipeline
+### 2. XiYan-SQL Framework Pipeline
 
-**Pattern**: Chain of Responsibility + Command
+**Pattern**: Multi-Agent Collaboration + Candidate Generation
 ```python
-# Pipeline: Question → Plan → Queries → Results → Panels
-async def process_question(question: Question) -> List[Panel]:
-    # 1. Semantic analysis
-    plan = await semantic_engine.analyze(question.text)
+# Pipeline: Intent Validation → Schema Linking → Candidate Generation → Selection → Panels
+async def process_question_with_agents(question: str, context: AgentContext) -> List[Panel]:
+    # 1. Intent validation and refinement
+    intent_result = await intent_agent.process(question, context)
+    if not intent_result.success:
+        return await handle_refinement_dialog(intent_result)
     
-    # 2. Query generation
-    queries = await text_to_sql_engine.generate_queries(plan)
+    # 2. Schema linking and M-Schema generation
+    m_schema = await schema_linker.optimize_for_question(base_schema, question)
     
-    # 3. Query execution
-    results = await connection_pool.execute_queries(queries)
+    # 3. Candidate generation with multiple generators
+    generation_context = GenerationContext(question=question, m_schema=m_schema)
+    candidates = await candidate_hub.generate_candidates(generation_context)
     
-    # 4. Visualization recommendation
-    panel_specs = await viz_engine.recommend_panels(results)
+    # 4. Candidate selection
+    selected_candidate = await selection_agent.select_best_candidate(candidates)
     
-    # 5. Panel creation
-    return await panel_service.create_panels(panel_specs)
+    # 5. Panel generation
+    return await panel_service.create_panels_from_sql(selected_candidate)
 ```
 
 ### 3. Multi-Database Connection Management
@@ -79,26 +120,39 @@ class ConnectionPool:
         # Periodic health monitoring
 ```
 
-### 4. Panel Specification System
+### 4. Agent Base System
 
-**Pattern**: Specification + Builder
+**Pattern**: Template Method + Strategy + SOLID Principles
 ```python
-@dataclass
-class PanelSpec:
-    id: str
-    type: ChartType
-    title: str
-    data: List[DataPoint]
-    config: Dict[str, Any]
+class BaseAgent(ABC, Generic[T, R]):
+    """Abstract base agent following single responsibility principle"""
     
-    # Builder methods for different chart types
-    @classmethod
-    def line_chart(cls, data, x_axis, y_axis):
-        # Smart defaults for line charts
-        
-    @classmethod
-    def metric(cls, value, title, format=None):
-        # Single metric display
+    def __init__(self, llm_provider: ILLMProvider, config: ProviderConfig):
+        self.llm_provider = llm_provider  # Dependency injection
+        self.config = config
+    
+    async def process(self, input_data: T, context: AgentContext) -> AgentResponse[R]:
+        """Template method pattern - subclasses implement specific logic"""
+        self.validate_input(input_data)
+        prompt = await self.prepare_prompt(input_data, context)
+        response = await self._execute_llm_request(prompt)
+        return await self.parse_response(response, input_data)
+    
+    @abstractmethod
+    async def prepare_prompt(self, input_data: T, context: AgentContext) -> str:
+        """Strategy pattern for different prompt styles"""
+        pass
+
+# Specialized agents inherit and implement specific behavior
+class IntentValidationAgent(BaseAgent[IntentValidationRequest, IntentAnalysis]):
+    async def prepare_prompt(self, input_data, context) -> str:
+        # Intent validation specific prompting
+        pass
+
+class SQLGenerationAgent(BaseAgent[SQLGenerationRequest, List[SQLCandidate]]):
+    async def prepare_prompt(self, input_data, context) -> str:
+        # SQL generation specific prompting with M-Schema
+        pass
 ```
 
 ## Data Flow Patterns
