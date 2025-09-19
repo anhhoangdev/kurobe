@@ -12,10 +12,9 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/postgres/migrations:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kurobe"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
@@ -24,14 +23,30 @@ services:
     container_name: kurobe-redis
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 5
+
+  flyway:
+    image: flyway/flyway:10-alpine
+    container_name: kurobe-flyway
+    command: migrate
+    volumes:
+      - ./backend/db/migration:/flyway/sql
+    environment:
+      - FLYWAY_URL=jdbc:postgresql://postgres:5432/kurobe
+      - FLYWAY_USER=kurobe
+      - FLYWAY_PASSWORD=kurobe
+      - FLYWAY_BASELINE_ON_MIGRATE=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - migration
 
   # Backend API (uncomment when using Docker for development)
   # backend:

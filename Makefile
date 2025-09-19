@@ -59,18 +59,18 @@ docker-down:
 docker-logs:
 	docker-compose logs -f
 
-# Database migrations with Flyway
+# Database migrations with Flyway (Docker-based)
 migrate:
 	@echo "Running Flyway migrations..."
-	cd backend && flyway -configFiles=flyway.conf migrate
+	docker-compose --profile migration up flyway --exit-code-from flyway
 
 migrate-info:
 	@echo "Checking migration status..."
-	cd backend && flyway -configFiles=flyway.conf info
+	docker-compose --profile migration run --rm flyway info
 
 migrate-clean:
 	@echo "Cleaning database (WARNING: This will drop all objects)..."
-	cd backend && flyway -configFiles=flyway.conf clean
+	docker-compose --profile migration run --rm flyway clean
 
 migrate-create:
 	@echo "To create a new migration:"

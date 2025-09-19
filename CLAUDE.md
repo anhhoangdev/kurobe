@@ -23,9 +23,9 @@ pytest -v                             # Run tests
 black . && ruff check --fix .         # Format and lint code
 mypy app                              # Type checking
 
-# Database migrations with Flyway
-flyway -configFiles=flyway.conf migrate      # Run migrations
-flyway -configFiles=flyway.conf info         # Check migration status
+# Database migrations with Docker Flyway (no local installation needed)
+make migrate                          # Run migrations
+make migrate-info                     # Check migration status
 ```
 
 ### Frontend Development
@@ -190,9 +190,9 @@ text_to_sql:
 
 ## Database Migrations
 
-### Flyway Setup
-- **Migration Tool**: Flyway for database schema versioning
-- **Configuration**: `backend/flyway.conf` contains database connection settings
+### Docker-based Flyway Setup
+- **Migration Tool**: Flyway running in Docker container (no local installation needed)
+- **Configuration**: Environment variables in `docker-compose.yml`
 - **Migration Files**: Located in `backend/db/migration/`
 - **Naming Convention**: `V<version>__<description>.sql` (e.g., `V1__Initial_schema.sql`)
 
@@ -221,4 +221,4 @@ make migrate-info
 - Engine system supports runtime swapping without service restarts
 - Panel specifications are flexible and support multiple visualization types
 - Connection management includes health checks and automatic failover
-- Uses Flyway for robust database migration management
+- Uses Docker-based Flyway for robust database migration management with zero setup overhead

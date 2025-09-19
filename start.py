@@ -105,26 +105,19 @@ def stop_infrastructure():
 
 
 def run_migrations():
-    """Run database migrations using Flyway."""
+    """Run database migrations using Docker Flyway."""
     print(f"{Colors.YELLOW}Running database migrations...{Colors.ENDC}")
 
-    # Check if backend directory exists
-    if not Path("backend").exists():
-        print(f"{Colors.RED}❌ Backend directory not found{Colors.ENDC}")
-        return False
-
     try:
-        # Run migrations using Flyway
+        # Run migrations using Docker Flyway
         subprocess.run(
-            ["flyway", "-configFiles=flyway.conf", "migrate"],
-            cwd="backend",
+            ["docker-compose", "--profile", "migration", "up", "flyway", "--exit-code-from", "flyway"],
             check=True
         )
         print(f"{Colors.GREEN}✅ Database migrations completed{Colors.ENDC}")
         return True
     except subprocess.SubprocessError as e:
         print(f"{Colors.YELLOW}⚠️ Migration failed (this is OK for first run): {e}{Colors.ENDC}")
-        print(f"{Colors.YELLOW}Make sure Flyway is installed: https://flywaydb.org/download{Colors.ENDC}")
         return True  # Continue anyway
 
 

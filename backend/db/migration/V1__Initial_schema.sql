@@ -249,7 +249,7 @@ CREATE POLICY dashboards_visibility_policy ON dashboards
 
 -- Users can only modify their own dashboards
 CREATE POLICY dashboards_modify_policy ON dashboards
-    FOR INSERT, UPDATE, DELETE USING (user_id = current_setting('app.current_user_id')::UUID);
+    FOR ALL USING (user_id = current_setting('app.current_user_id')::UUID);
 
 -- Connection visibility based on permissions (simplified for now)
 CREATE POLICY connections_policy ON connections
