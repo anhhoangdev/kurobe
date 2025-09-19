@@ -1,11 +1,12 @@
 """
 Connections API endpoints
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from kurobe.core.schemas import ConnectionRequest, ConnectionResponse
 
 from app.middleware.auth import get_current_user
-from kurobe.core.schemas import ConnectionRequest, ConnectionResponse
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ async def create_connection(
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
-@router.get("/", response_model=List[ConnectionResponse])
+@router.get("/", response_model=list[ConnectionResponse])
 async def list_connections(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),

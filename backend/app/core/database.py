@@ -1,10 +1,12 @@
 """
 Database connection management for Kurobe using asyncpg
 """
-from typing import Optional, Any
-import asyncpg
-from contextlib import asynccontextmanager
+
 import threading
+from contextlib import asynccontextmanager
+from typing import Any, Optional
+
+import asyncpg
 
 from app.core.config import settings
 from app.core.logging import logger
@@ -12,8 +14,8 @@ from app.core.logging import logger
 
 class DBConnection:
     """Thread-safe singleton database connection manager using asyncpg."""
-    
-    _instance: Optional['DBConnection'] = None
+
+    _instance: Optional["DBConnection"] = None
     _lock = threading.Lock()
 
     def __new__(cls):
@@ -34,24 +36,18 @@ class DBConnection:
         """Initialize the database connection pool."""
         if self._initialized:
             return
-                
+
         try:
             logger.info("Initializing database connection pool")
-            
+
             # Create connection pool
             self._pool = await asyncpg.create_pool(
-                str(settings.DATABASE_URL),
-                min_size=5,
-                max_size=20,
-                command_timeout=60,
-                server_settings={
-                    'jit': 'off'
-                }
+                str(settings.DATABASE_URL), min_size=5, max_size=20, command_timeout=60, server_settings={"jit": "off"}
             )
-            
+
             self._initialized = True
             logger.info("Database connection pool initialized successfully")
-            
+
         except Exception as e:
             logger.error(f"Database initialization error: {e}")
             raise RuntimeError(f"Failed to initialize database connection: {str(e)}")
@@ -74,7 +70,7 @@ class DBConnection:
         """Acquire a connection from the pool."""
         if not self._initialized:
             await self.initialize()
-        
+
         async with self._pool.acquire() as conn:
             yield conn
 
@@ -88,7 +84,7 @@ class DBConnection:
         async with self.acquire() as conn:
             return await conn.fetch(query, *args)
 
-    async def fetchrow(self, query: str, *args) -> Optional[asyncpg.Record]:
+    async def fetchrow(self, query: str, *args) -> asyncpg.Record | None:
         """Execute a query and fetch a single row."""
         async with self.acquire() as conn:
             return await conn.fetchrow(query, *args)
@@ -106,7 +102,7 @@ class DBConnection:
             SET LOCAL app.is_superuser = $2;
             """,
             user_id,
-            str(is_superuser).lower()
+            str(is_superuser).lower(),
         )
 
 

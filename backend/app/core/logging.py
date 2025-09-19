@@ -1,32 +1,32 @@
 """
 Structured logging configuration for Kurobe
 """
-import structlog
+
 import logging
 import os
+
+import structlog
+
 from app.core.config import settings
 
 
 def setup_logging():
     """Configure structured logging for the application."""
-    
+
     # Set default logging level based on environment
     if settings.ENVIRONMENT == "production":
         default_level = "INFO"
     else:
         default_level = "DEBUG"
-    
-    LOGGING_LEVEL = logging.getLevelNamesMapping().get(
-        os.getenv("LOGGING_LEVEL", default_level).upper(), 
-        logging.DEBUG
-    )
-    
+
+    LOGGING_LEVEL = logging.getLevelNamesMapping().get(os.getenv("LOGGING_LEVEL", default_level).upper(), logging.DEBUG)
+
     # Use JSON renderer in production, console renderer in development
     if settings.ENVIRONMENT == "production":
         renderer = [structlog.processors.JSONRenderer()]
     else:
         renderer = [structlog.dev.ConsoleRenderer()]
-    
+
     structlog.configure(
         processors=[
             structlog.stdlib.add_log_level,
@@ -50,7 +50,7 @@ def setup_logging():
         cache_logger_on_first_use=True,
         wrapper_class=structlog.make_filtering_bound_logger(LOGGING_LEVEL),
     )
-    
+
     # Configure standard logging to work with structlog
     logging.basicConfig(
         format="%(message)s",

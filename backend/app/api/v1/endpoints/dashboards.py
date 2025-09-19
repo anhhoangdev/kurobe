@@ -1,12 +1,13 @@
 """
 Dashboards API endpoints
 """
-from typing import List
+
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from kurobe.core.schemas import DashboardRequest, DashboardResponse
 
 from app.middleware.auth import get_current_user
-from kurobe.core.schemas import DashboardRequest, DashboardResponse
 
 router = APIRouter()
 
@@ -31,7 +32,7 @@ async def get_dashboard(
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
-@router.get("/", response_model=List[DashboardResponse])
+@router.get("/", response_model=list[DashboardResponse])
 async def list_dashboards(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),

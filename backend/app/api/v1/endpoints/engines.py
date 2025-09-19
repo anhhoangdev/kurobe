@@ -1,11 +1,12 @@
 """
 Engines API endpoints
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, HTTPException
+from kurobe.core.schemas import EngineConfigRequest, EngineConfigResponse
 
 from app.middleware.auth import get_current_user
-from kurobe.core.schemas import EngineConfigRequest, EngineConfigResponse
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ async def create_engine_config(
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
-@router.get("/", response_model=List[EngineConfigResponse])
+@router.get("/", response_model=list[EngineConfigResponse])
 async def list_engine_configs(
     user: dict = Depends(get_current_user),
 ):

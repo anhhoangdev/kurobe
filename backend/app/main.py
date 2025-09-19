@@ -1,19 +1,20 @@
 """
 Main FastAPI application for Kurobe BI Platform
 """
+
 from contextlib import asynccontextmanager
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.core.config import settings
-from app.core.logging import setup_logging, logger
-from app.core.database import init_db, close_db
-from app.core.cache import init_cache, close_cache
 from app.api.v1.api import api_router
-from app.engines.registry import init_engines, close_engines
+from app.core.cache import close_cache, init_cache
+from app.core.config import settings
+from app.core.database import close_db, init_db
+from app.core.logging import logger, setup_logging
+from app.engines.registry import close_engines, init_engines
 from app.middleware.auth import AuthMiddleware
 from app.middleware.logging import LoggingMiddleware
 from app.middleware.metrics import MetricsMiddleware
@@ -24,35 +25,35 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     # Startup
     logger.info("Starting Kurobe Backend API")
-    
+
     # Initialize logging
     setup_logging()
-    
+
     # Initialize database
     await init_db()
-    
+
     # Initialize cache
     await init_cache()
-    
+
     # Initialize engines
     await init_engines()
-    
+
     logger.info("Kurobe Backend API started successfully")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Kurobe Backend API")
-    
+
     # Close engines
     await close_engines()
-    
+
     # Close cache
     await close_cache()
-    
+
     # Close database
     await close_db()
-    
+
     logger.info("Kurobe Backend API shut down successfully")
 
 
@@ -86,7 +87,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
-async def root() -> Dict[str, Any]:
+async def root() -> dict[str, Any]:
     """Root endpoint"""
     return {
         "app": "Kurobe BI Platform",
@@ -97,7 +98,7 @@ async def root() -> Dict[str, Any]:
 
 
 @app.get("/health")
-async def health_check() -> Dict[str, Any]:
+async def health_check() -> dict[str, Any]:
     """Health check endpoint"""
     return {
         "status": "healthy",
@@ -115,7 +116,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
         path=request.url.path,
         method=request.method,
     )
-    
+
     return JSONResponse(
         status_code=500,
         content={

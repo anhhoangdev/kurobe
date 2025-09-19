@@ -1,18 +1,19 @@
 """
 Redis cache service for Kurobe
 """
-import redis.asyncio as redis
+
 import asyncio
-from typing import Any, Optional, List
-import json
 import hashlib
+import json
+
+import redis.asyncio as redis
 
 from app.core.config import settings
 from app.core.logging import logger
 
 # Redis client and connection pool
-client: Optional[redis.Redis] = None
-pool: Optional[redis.ConnectionPool] = None
+client: redis.Redis | None = None
+pool: redis.ConnectionPool | None = None
 _initialized = False
 _init_lock = asyncio.Lock()
 
@@ -27,7 +28,7 @@ def initialize():
 
     # Get Redis configuration from settings
     redis_url = str(settings.REDIS_URL)
-    
+
     # Parse URL to get components
     if redis_url.startswith("redis://"):
         # Connection pool configuration - optimized for production
@@ -70,7 +71,7 @@ async def initialize_async():
             await asyncio.wait_for(client.ping(), timeout=5.0)
             logger.debug("Successfully connected to Redis")
             _initialized = True
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.error("Redis connection timeout during initialization")
             client = None
             _initialized = False
@@ -91,24 +92,24 @@ async def close():
         logger.debug("Closing Redis connection")
         try:
             await asyncio.wait_for(client.aclose(), timeout=5.0)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Redis close timeout, forcing close")
         except Exception as e:
             logger.warning(f"Error closing Redis client: {e}")
         finally:
             client = None
-    
+
     if pool:
         logger.debug("Closing Redis connection pool")
         try:
             await asyncio.wait_for(pool.aclose(), timeout=5.0)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Redis pool close timeout, forcing close")
         except Exception as e:
             logger.warning(f"Error closing Redis pool: {e}")
         finally:
             pool = None
-    
+
     _initialized = False
     logger.debug("Redis connection and pool closed")
 
@@ -122,13 +123,13 @@ async def get_client():
 
 
 # Basic Redis operations
-async def set(key: str, value: str, ex: Optional[int] = None, nx: bool = False):
+async def set(key: str, value: str, ex: int | None = None, nx: bool = False):
     """Set a Redis key."""
     redis_client = await get_client()
     return await redis_client.set(key, value, ex=ex, nx=nx)
 
 
-async def get(key: str, default: Optional[str] = None):
+async def get(key: str, default: str | None = None):
     """Get a Redis key."""
     redis_client = await get_client()
     result = await redis_client.get(key)
@@ -154,29 +155,25 @@ async def create_pubsub():
 
 
 # Query caching specific functions
-def generate_query_cache_key(query: str, connection_id: str, parameters: Optional[dict] = None) -> str:
+def generate_query_cache_key(query: str, connection_id: str, parameters: dict | None = None) -> str:
     """Generate a cache key for a query."""
     # Normalize query (remove extra whitespace)
     normalized_query = " ".join(query.split())
-    
+
     # Create cache key components
     key_components = [normalized_query, connection_id]
     if parameters:
         key_components.append(json.dumps(parameters, sort_keys=True))
-    
+
     # Generate hash
     key_string = "|".join(key_components)
     query_hash = hashlib.sha256(key_string.encode()).hexdigest()[:16]
-    
+
     return f"query_cache:{query_hash}"
 
 
 async def cache_query_result(
-    query: str,
-    connection_id: str,
-    result: dict,
-    parameters: Optional[dict] = None,
-    ttl: int = QUERY_CACHE_TTL
+    query: str, connection_id: str, result: dict, parameters: dict | None = None, ttl: int = QUERY_CACHE_TTL
 ):
     """Cache a query result."""
     try:
@@ -188,11 +185,7 @@ async def cache_query_result(
         logger.warning(f"Failed to cache query result: {e}")
 
 
-async def get_cached_query_result(
-    query: str,
-    connection_id: str,
-    parameters: Optional[dict] = None
-) -> Optional[dict]:
+async def get_cached_query_result(query: str, connection_id: str, parameters: dict | None = None) -> dict | None:
     """Get a cached query result."""
     try:
         cache_key = generate_query_cache_key(query, connection_id, parameters)
@@ -219,7 +212,7 @@ async def store_session(session_id: str, data: dict, ttl: int = 3600):
         logger.warning(f"Failed to store session: {e}")
 
 
-async def get_session(session_id: str) -> Optional[dict]:
+async def get_session(session_id: str) -> dict | None:
     """Get session data."""
     try:
         session_key = f"session:{session_id}"

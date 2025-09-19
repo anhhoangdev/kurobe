@@ -1,11 +1,12 @@
 """
 Main API router for v1 endpoints
 """
-from fastapi import APIRouter
 
-from app.api.v1.endpoints import questions, dashboards, connections, engines, auth
-from app.middleware.metrics import get_metrics
+from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
+
+from app.api.v1.endpoints import auth, connections, dashboards, engines, questions
+from app.middleware.metrics import get_metrics
 
 api_router = APIRouter()
 
@@ -15,6 +16,7 @@ api_router.include_router(questions.router, prefix="/questions", tags=["question
 api_router.include_router(dashboards.router, prefix="/dashboards", tags=["dashboards"])
 api_router.include_router(connections.router, prefix="/connections", tags=["connections"])
 api_router.include_router(engines.router, prefix="/engines", tags=["engines"])
+
 
 # Metrics endpoint
 @api_router.get("/metrics", response_class=PlainTextResponse)

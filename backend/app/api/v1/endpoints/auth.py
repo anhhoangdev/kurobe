@@ -1,7 +1,8 @@
 """
 Authentication API endpoints
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
@@ -41,7 +42,7 @@ async def create_api_key(
     raise HTTPException(status_code=501, detail="Not implemented yet")
 
 
-@router.get("/api-keys", response_model=List[APIKeyListResponse])
+@router.get("/api-keys", response_model=list[APIKeyListResponse])
 async def list_api_keys(
     user: dict = Depends(get_current_user),
 ):

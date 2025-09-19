@@ -1,18 +1,19 @@
 """
 Questions API endpoints
 """
-from typing import List, Optional
+
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from kurobe.core.schemas import (
+    ChatRequest,
+    ChatResponse,
+    QuestionRequest,
+    QuestionResponse,
+)
 
 from app.middleware.auth import get_current_user
 from app.services.questions import QuestionService
-from kurobe.core.schemas import (
-    QuestionRequest,
-    QuestionResponse,
-    ChatRequest,
-    ChatResponse,
-)
 
 router = APIRouter()
 
@@ -45,12 +46,12 @@ async def get_question(
     return question
 
 
-@router.get("/", response_model=List[QuestionResponse])
+@router.get("/", response_model=list[QuestionResponse])
 async def list_questions(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    status: Optional[str] = Query(None),
-    tags: Optional[str] = Query(None),
+    status: str | None = Query(None),
+    tags: str | None = Query(None),
     user: dict = Depends(get_current_user),
     service: QuestionService = Depends(get_question_service),
 ):
@@ -68,7 +69,7 @@ async def list_questions(
 @router.put("/{question_id}", response_model=QuestionResponse)
 async def update_question(
     question_id: UUID,
-    tags: Optional[List[str]] = None,
+    tags: list[str] | None = None,
     user: dict = Depends(get_current_user),
     service: QuestionService = Depends(get_question_service),
 ):
@@ -103,7 +104,7 @@ async def chat_with_question(
     # Ensure the question_id matches
     if request.question_id != question_id:
         raise HTTPException(status_code=400, detail="Question ID mismatch")
-    
+
     return await service.chat_with_question(request, user["user_id"])
 
 
