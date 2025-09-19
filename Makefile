@@ -59,12 +59,24 @@ docker-down:
 docker-logs:
 	docker-compose logs -f
 
-# Database migrations
+# Database migrations with Flyway
 migrate:
-	cd backend && alembic upgrade head
+	@echo "Running Flyway migrations..."
+	cd backend && flyway -configFiles=flyway.conf migrate
+
+migrate-info:
+	@echo "Checking migration status..."
+	cd backend && flyway -configFiles=flyway.conf info
+
+migrate-clean:
+	@echo "Cleaning database (WARNING: This will drop all objects)..."
+	cd backend && flyway -configFiles=flyway.conf clean
 
 migrate-create:
-	cd backend && alembic revision -m "$(name)"
+	@echo "To create a new migration:"
+	@echo "1. Create a new SQL file in backend/db/migration/"
+	@echo "2. Name it V<version>__<description>.sql (e.g., V2__Add_user_table.sql)"
+	@echo "3. Run 'make migrate' to apply it"
 
 # Testing
 test: test-backend test-frontend test-sdk

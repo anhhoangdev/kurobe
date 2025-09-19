@@ -1,7 +1,6 @@
 -- Kurobe BI Platform Initial Schema
 -- This creates the core tables for the BI chat application
-
-BEGIN;
+-- Flyway migration V1
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -259,4 +258,4 @@ CREATE POLICY connections_policy ON connections
         OR current_setting('app.is_superuser')::BOOLEAN = true
     );
 
-COMMIT;
+-- End of migration
